@@ -7,9 +7,10 @@ Usage:
 
     python cleanbib.py bibfile.in bibfile.out  
 
-The script reads the entire input file before opening the output file, so you can use the same file for input and output. Beware, however, that it will clobber whatever output file you give it, so if there is some unforeseen crash, the output file will be unusable. Any files with duplicate IDs will be listed to stdout after sorting everything.
+This Python 2.x script reads the entire input file before opening the output file, so you can use the same file for input and output. Beware, however, that it will clobber whatever output file you give it, so if there is some unforeseen crash, the output file will be unusable. Any files with duplicate IDs will be listed to stdout after sorting everything.
 
 Features:  
 *Alphabetizes bibfile  
 *Converts keys to lowercase  
+*Enforces curly brace delimiters around each value of a key-value pair (replaces existing delimiters)  
 *Lists duplicate IDs  
