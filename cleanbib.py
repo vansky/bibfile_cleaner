@@ -1,10 +1,10 @@
 # python cleanbib.py bibfile outbibfile
-# USE: cleans bibtex bibfiles
+# cleans bibtex bibfiles
 #  alphabetizes entries
 #  separates alphabetical sections with %XXX for easy browsing
 #  converts all keys to lowercase for consistency
 #  reports duplicate bib IDs
-#  TODO: standardizes author formats
+#  standardizes author formats
 #  TODO: reports probability of duplicate entries based on key-value overlap
 
 import sys
@@ -31,11 +31,11 @@ def addentry(entry,outbib,entryid):
         (dentry[tag][0] == '{' and dentry[tag][-1] == '}')):
         #need to remove first and last char (likely "",'', or {})
         dentry[tag] = dentry[tag][1:-1]
-  if 'authors' in dentry:
-    dentry['authors'] = stringauth(stdauth(dentry['authors']))
-    if dentry['authors'] not in authordups:
-      authordups[dentry['authors']] = []
-    authordups[dentry['authors']] = (dentry['id'],entryid) #add entryid to the list of possible dups for these authors
+  if 'author' in dentry:
+    dentry['author'] = stringauth(stdauth(dentry['author']))
+    if dentry['author'] not in authordups:
+      authordups[dentry['author']] = []
+    authordups[dentry['author']] = (dentry['id'],entryid) #add entryid to the list of possible dups for these authors
   outbib[(dentry['id'],entryid)] = dentry
 
 def alphabetize(outbib):
@@ -50,26 +50,36 @@ def alphabetize(outbib):
 
 def reportdups(outbib, authordups):
   #report probability of duplicate entries
-  print 'Duplicate reporting not currently implemented'
+  print 'Probabilistic duplicate reporting not currently implemented'
   pass
 
 def stdauth(instr):
   #convert a string form of author bib info to a list of tuples
-  #stringlist = instr.split(' and ')
-  #tuplelist = []
-  #for s in stringlist:
-  #  comma = s.find(',')
-  #  if comma != -1:
-  #    #format is last, first
-  #    tuplelist.append((s[comma+1:].strip(), s[:comma].strip()) )
-  #  else:
-  #    #format is first last
-  return instr
+  stringlist = instr.split(' and ')
+  tuplelist = []
+  for s in stringlist:
+    comma = s.find(',')
+    if comma != -1:
+      #format is last, first
+      tuplelist.append((s[comma+1:].strip(), s[:comma].strip().strip('{}')) )
+    else:
+      #format is first middles last
+      opbrack = s.find(' {')
+      #assume brackets will only be used around last name
+      if opbrack != -1:
+        #format is first middles {last}
+        tuplelist.append((s[:opbrack].strip(), s[opbrack+1:].strip().strip('{}')) )
+      else:
+        sstr = s.split()
+        tuplelist.append((' '.join(sstr[:-1]).strip(),sstr[-1].strip()) )
+  return tuplelist
 
 def stringauth(inlist):
   #convert a list of author tuples to a string
-  #raise
-  return inlist
+  outlist = []
+  for auth in inlist:
+    outlist.append('{'+auth[1]+'}, '+auth[0])
+  return ' and '.join(outlist)
 
 if len(sys.argv) < 3:
   print 'Too few args'

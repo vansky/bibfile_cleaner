@@ -14,3 +14,4 @@ Features:
 *Converts keys to lowercase  
 *Enforces curly brace delimiters around each value of a key-value pair (replaces existing delimiters)  
 *Lists duplicate IDs  
+*Standardizes author names to {LAST}, FIRST  
