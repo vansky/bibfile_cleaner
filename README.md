@@ -15,3 +15,13 @@ Features:
 *Enforces curly brace delimiters around each value of a key-value pair (replaces existing delimiters)  
 *Lists duplicate IDs  
 *Standardizes author names to {LAST}, FIRST  
+
+Also includes alignbib.py, which standardizes bib ID format in preparation for merging a new bibfile into an existing bibfile.
+
+Usage:
+
+    python alignbib.py bibfile.in bibfile.out
+    cat bibfile.out >> bibfile.old
+    python cleanbib.py bibfile.old bibfile.new
+
+Default ID format is last1(|last2|etal)year3year4. Also removes 'file' key-value pairs from bibfile.in in order to remove the other bibfile's Mendeley information.  
