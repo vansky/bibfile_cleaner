@@ -1,13 +1,55 @@
-# python cleanbib.py bibfile outbibfile
-# cleans bibtex bibfiles
-#  alphabetizes entries
-#  separates alphabetical sections with %XXX for easy browsing
-#  converts all keys to lowercase for consistency
-#  reports duplicate bib IDs
-#  standardizes author formats
-#  TODO: reports probability of duplicate entries based on key-value overlap
+# python alignbib.py bibfile outbibfile
+# aligns bibfile IDs to a unified format
+#  best used on a new bibfile before merging it into an existing bibfile
+#  that way, no existing bib refs in your papers will be broken
 
+#  use idformat function to specify desired id format
+
+import re
 import sys
+
+def idformat(entry):
+  #formats the bib ID based on this spec;
+  #default is schulerlab format: last1(last2|etal)year3year4
+  if 'author' in entry and 'year' in entry:
+    #standard format only exists when there are authors and a year
+    authors = entry['author'].split(' and ')
+    for aix,author in enumerate(authors):
+      sauth = author.split(',')
+      authors[aix] = (sauth[1].strip(), cleanchars(sauth[0].strip().strip('{}'))) #(first, last)
+    if len(authors) > 2:
+      #et al case
+      entry['id'] = authors[0][1].lower().replace(' ','') + 'etal' + entry['year'][-2:]+','
+    elif len(authors) > 1:
+      #two author case
+      entry['id'] = authors[0][1].lower().replace(' ','') + authors[1][1].lower().replace(' ','') + entry['year'][-2:]+','
+    else:
+      #solo author case
+      entry['id'] = authors[0][1].lower().replace(' ','') + entry['year'][-2:]+','
+  return entry
+
+def cleanchars(instr):
+  #remove international symbols/diacritics from names before using them as IDs
+  outstr = []
+  cix = 0
+  while cix < len(instr): 
+    if instr[cix] == '\\':
+      if instr[cix+2] == '{':
+        #the escaped portion is in braces
+        endix = instr.find('}',cix+3)
+        if endix == -1:
+          outstr.append(instr[cix+3:])
+          break
+        outstr.append(instr[cix+3:endix])
+        cix = endix
+      else:
+        #only one char is escaped
+        outstr.append(instr[cix+2])
+        cix += 2
+    else:
+      outstr.append(instr[cix])
+    cix += 1
+  return ''.join(outstr)
 
 def addentry(entry,outbib,entryid):
   #adds an entry to a given bibdict
@@ -33,6 +75,7 @@ def addentry(entry,outbib,entryid):
         dentry[tag] = dentry[tag][1:-1]
   if 'author' in dentry:
     dentry['author'] = stringauth(stdauth(dentry['author']))
+    dentry = idformat(dentry)
     if dentry['author'] not in authordups:
       authordups[dentry['author']] = []
     authordups[dentry['author']] = (dentry['id'],entryid) #add entryid to the list of possible dups for these authors
@@ -47,11 +90,6 @@ def alphabetize(outbib):
   namekeys = zip(*keys)[0]
   print 'Duplicate IDs: ', list(set([n[:-1] for n in namekeys if namekeys.count( n ) > 1]))
   return output
-
-def reportdups(outbib, authordups):
-  #report probability of duplicate entries
-  print 'Probabilistic duplicate reporting not currently implemented'
-  pass
 
 def stdauth(instr):
   #convert a string form of author bib info to a list of tuples
@@ -137,7 +175,6 @@ for line in biblines:
       entry.append( (sline[:tagbreak].lower().strip(), sline[tagbreak+1:].strip()) )
 
 #check for duplicates
-reportdups(outbib, authordups)
 output = alphabetize(outbib)
 
 alphatag = ''
@@ -155,6 +192,8 @@ with open(sys.argv[2],'w') as f:
     keys = sorted(entry)
     keys.remove('type')
     keys.remove('id')
+    if 'file' in keys:
+      keys.remove('file') #since you'll really only do this when merging another bibfile, get rid of the other person's Mendeley info
     lastkey = keys[-1]
     for key in keys:
       if key == lastkey:
