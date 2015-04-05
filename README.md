@@ -20,8 +20,12 @@ Also includes alignbib.py, which standardizes bib ID format in preparation for m
 
 Usage:
 
-    python alignbib.py bibfile.in bibfile.out
-    cat bibfile.out >> bibfile.old
-    python cleanbib.py bibfile.old bibfile.new
+    python alignbib.py bibfile.in bibfile.out  
 
-Default ID format is last1(|last2|etal)year3year4. Also removes 'file' key-value pairs from bibfile.in in order to remove the other bibfile's Mendeley information.  
+Default ID format is last1(|last2|etal)year3year4. Also removes 'file' key-value pairs from bibfile.in in order to remove the other bibfile's Mendeley information.
+
+To merge two bibfiles:
+
+    python alignbib.py bibfile.in bibfile.out  
+    cat bibfile.out >> bibfile.old  
+    python cleanbib.py bibfile.old bibfile.new  
