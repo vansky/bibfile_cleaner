@@ -45,7 +45,7 @@ def alphabetize(outbib):
   for key in keys: #(id, autokey)
     output.append(outbib[key])
   namekeys = zip(*keys)[0]
-  print 'Duplicate IDs: ', list(set([n[:-1] for n in namekeys if namekeys.count( n ) > 1]))
+  print 'Duplicate IDs: ', sorted(list(set([n[:-1] for n in namekeys if namekeys.count( n ) > 1])))
   return output
 
 def reportdups(outbib, authordups):
@@ -61,14 +61,14 @@ def stdauth(instr):
     comma = s.find(',')
     if comma != -1:
       #format is last, first
-      tuplelist.append((s[comma+1:].strip(), s[:comma].strip().strip('{}')) )
+      tuplelist.append((s[comma+1:].strip().strip('{}'), s[:comma].strip().strip('{}')) )
     else:
       #format is first middles last
       opbrack = s.find(' {')
       #assume brackets will only be used around last name
       if opbrack != -1:
         #format is first middles {last}
-        tuplelist.append((s[:opbrack].strip(), s[opbrack+1:].strip().strip('{}')) )
+        tuplelist.append((s[:opbrack].strip().strip('{}'), s[opbrack+1:].strip().strip('{}')) )
       else:
         sstr = s.split()
         tuplelist.append((' '.join(sstr[:-1]).strip(),sstr[-1].strip()) )
@@ -78,11 +78,15 @@ def stringauth(inlist):
   #convert a list of author tuples to a string
   outlist = []
   for auth in inlist:
-    if len(auth[1]) > 3 and auth[1][-2] == '{':
+    first = auth[0]
+    last = auth[1]
+    if len(last) > 3 and last[-2] == '{':
       #final char has a diacritic, so replace the real final brace
-      outlist.append('{'+auth[1]+'}}, '+auth[0])
-    else:
-      outlist.append('{'+auth[1]+'}, '+auth[0])
+      last = last+'}'
+    if len(first) > 3 and first[-2] == '{':
+      #final char has a diacritic, so replace the real final brace
+      first = first + '}'
+    outlist.append('{'+last+'}, '+first)
   return ' and '.join(outlist)
 
 if len(sys.argv) < 3:
