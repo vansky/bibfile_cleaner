@@ -160,7 +160,13 @@ with open(sys.argv[2],'w') as f:
     keys.remove('type')
     keys.remove('id')
     lastkey = keys[-1]
+#    if 'year' in entry and entry['year'][-1] == '}':
+#      #handle case where entry wasn't ended on a newline
+#      entry['year'] = entry['year'][:-1]
     for key in keys:
+      if entry[key].count('{') != entry[key].count('}') and entry[key][-1] == '}':
+        #handle case where entry wasn't ended on a newline; especially bad with BibDesk
+        entry[key] = entry[key][:-1]
       if key == lastkey:
         f.write('  '+key+' = {'+entry[key]+'}\n')
       else:
